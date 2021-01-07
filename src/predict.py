@@ -183,14 +183,14 @@ def generate_blob(image, scale=1/255, size=(416, 416), mean=0, crop=False):
     return cv2.dnn.blobFromImage(image, scale, size, mean, crop)
 
 
-config = "data/data_model/yolov4-custom.cfg"
-weigth = "data/data_model/yolov4-custom_2000.weights"
-classe = "data/data_model/obj.names"
+config = "data/metrics/yolov4-custom.cfg"
+weigth = "data/metrics/yolov4-custom_2000.weights"
+classe = "data/metrics/obj.names"
 predictor = YoloPredictionModel(config,
                                 weigth,
                                 classe).set_backend_and_device()
 for image in os.listdir("data/raw_images"):
-    frame = cv2.imread("data/lab_images/{}".format(image))
+    frame = cv2.imread("data/raw_images/{}".format(image))
     blob_input = generate_blob(frame)
     predictor.ingest_input(blob_input)
     layers = predictor.get_output_layers_names()
