@@ -2,3 +2,5 @@
 # the performance. Learn more at
 # https://dvc.org/doc/user-guide/dvcignore
 data/results
+data/untracked_images
+
