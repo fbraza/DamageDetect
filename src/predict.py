@@ -8,11 +8,13 @@ class YoloPredictionModel:
         """
         Instantiate an object which encapsulates all data and API necessary to
         run the predicitions
+
         Parameters:
         -----------
         - configs: str, path to the .cfg file containing model configuration
         - weights: str, path to the .weights generated after training
         - classes: list, list of string containing class names
+
         Attributes:
         -----------
         - classes: list[str], list containing names of the classes
@@ -27,9 +29,11 @@ class YoloPredictionModel:
     def class_names(self, path):
         """
         Method defined to generate a list of class names' strings
+
         Parameters:
         -----------
         - path: str, path to the obj.names file
+
         Return:
         -------
         - None
@@ -44,9 +48,11 @@ class YoloPredictionModel:
         In our case we limit the backend choice to OpenCV and the
         device choices to the use of CPU or CUDA. We leverage the
         dnn module from the cv2 library for that.
+
         Parameters:
         -----------
         - device: str, choose between CPU or GPU. CPU by default
+
         Return:
         -------
         - self
@@ -63,9 +69,11 @@ class YoloPredictionModel:
     def ingest_input(self, blob):
         """
         Setter method defined to send input to our yolo model.
+
         Parameters:
         -----------
         - blob: 4D numpy array object (images, channels, width, height)
+
         Return:
         -------
         - None
@@ -76,6 +84,7 @@ class YoloPredictionModel:
         """
         Getter method to that return as a list the name of all layers
         present in our yolo neural network.
+
         Return:
         -------
         - list: list of string of the layers' names
@@ -86,6 +95,7 @@ class YoloPredictionModel:
         """
         Getter method to get output layers position number. The yolo model has
         three output layers.
+
         Return:
         -------
         - list[list[int]]: Layer position. Be careful the fisrt layer is at
@@ -97,6 +107,7 @@ class YoloPredictionModel:
         """
         Getter method to extract the output layers based on their position
         inside the neural network architecture
+
         Return:
         -------
         - list: return the names of the three output layers of yolo
@@ -115,9 +126,11 @@ class YoloPredictionModel:
         - The fifth column of each array correspond the box confidence
         - The rest of the columns of each array correspond to each class with
           associated probability
+
         Return:
         -------
         - list[floats]
+
         Examples:
         ---------
         In our model we are suppose to get the following:
@@ -139,6 +152,7 @@ class YoloPredictionModel:
         is superior to the threshold we save the index.
         A second loop iterate through an enumerate iterable and get the
         corresponding class in order to output it in the video frame.
+
         Parameters:
         -----------
         - image: numpy array representation of the image
