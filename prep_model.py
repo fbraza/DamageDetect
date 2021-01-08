@@ -1,5 +1,5 @@
 import click
-from lib import data_aug, data_split
+from src import data_aug, data_split
 
 
 @click.group()
@@ -34,3 +34,7 @@ def transform(path_in, path_out, nbr_trans):
 def prepare(path_in, split_factor):
     """load img, split into train-val and prepare for yolo"""
     data_split.generate_yolo_inputs(path_in, split_factor)
+
+
+if __name__ == '__main__':
+    cli()

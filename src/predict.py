@@ -210,4 +210,4 @@ for image in os.listdir("data/raw_images"):
     layers = predictor.get_output_layers_names()
     output = predictor._forward()
     predictor.predict_and_identify(frame, output)
-    cv2.imwrite("data/results/{}".format(image), frame)
+    cv2.imwrite("data/results_pred/{}".format(image), frame)
