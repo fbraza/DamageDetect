@@ -198,7 +198,7 @@ def generate_blob(image, scale=1/255, size=(416, 416), mean=0, crop=False):
 
 
 config = "data/metrics/yolov4-custom.cfg"
-weigth = "data/metrics/yolov4-custom_2000.weights"
+weigth = "data/metrics/yolov4-custom_5000.weights"
 classe = "data/metrics/obj.names"
 predictor = YoloPredictionModel(config,
                                 weigth,
