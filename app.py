@@ -70,15 +70,14 @@ def predict_and_output(config_path,
                        output_crop,
                        pred_threshold):
     """localize boxes and scrap them out"""
-    # instantiate our predictor object
-    predictor = predict.YoloPredictionModel(
-        config_path,
-        weigth_path,
-        class_path
-    ).set_backend_and_device()
     # iterate through images input predict boxes and scrap them
     print("## --- Generating prediction and saving outpus --- ##")
     for image in tqdm(os.listdir(img_input)):
+        predictor = predict.YoloPredictionModel(
+            config_path,
+            weigth_path,
+            class_path
+        ).set_backend_and_device()
         frame = cv2.imread("{}{}".format(img_input, image))
         blob_input = imtools.generate_blob(frame)
         predictor.ingest_input(blob_input)
@@ -86,16 +85,16 @@ def predict_and_output(config_path,
         output = predictor._forward()
         predictor.predict_and_identify(frame, output, threshold=pred_threshold)
         cv2.imwrite("{}{}".format(output_pred, image), frame)
-        cropped_img = imtools.crop_predictions(
-            predictor.x_coord,
-            predictor.y_coord,
-            predictor.w_coord,
-            predictor.h_coord,
-            image=cv2.imread("{}{}".format(img_input, image))
-        )
         try:
+            cropped_img = imtools.crop_predictions(
+                predictor.x_coord,
+                predictor.y_coord,
+                predictor.w_coord,
+                predictor.h_coord,
+                image=cv2.imread("{}{}".format(img_input, image))
+            )
             cv2.imwrite("{}{}".format(output_crop, image), cropped_img)
-        except cv2.error:
+        except TypeError:
             continue
 
 
