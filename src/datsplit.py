@@ -1,5 +1,6 @@
 import os
 import shutil
+from tqdm import tqdm
 from random import shuffle
 
 
@@ -75,11 +76,11 @@ def generate_yolo_inputs(source_data: str, split_factor: float = 0.75) -> None:
     train = open("data/yol_images/train.txt", "w+")
     test = open("data/yol_images/test.txt", "w+")
     # Iterate through the file names for train
-    for idx, name in enumerate(spliter.train):
+    for idx, name in enumerate(tqdm(spliter.train)):
         write_train_txt(train, name, len(spliter.train), idx)
         copy_data(name, source_data, spliter.train_dest)
     # Iterate through the file names for test
-    for idx, name in enumerate(spliter.test):
+    for idx, name in enumerate(tqdm(spliter.test)):
         write_test_txt(test, name, len(spliter.test), idx)
         copy_data(name, source_data, spliter.test_dest)
     # Close the files
