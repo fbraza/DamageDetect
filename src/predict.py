@@ -1,6 +1,5 @@
 import cv2
 import numpy as np
-import os
 
 
 class YoloPredictionModel:
@@ -8,28 +7,37 @@ class YoloPredictionModel:
         """
         Instantiate an object which encapsulates all data and API necessary to
         run the predicitions
-        Parameters:
-        -----------
+
+        Args:
+        -----
         - configs: str, path to the .cfg file containing model configuration
         - weights: str, path to the .weights generated after training
         - classes: list, list of string containing class names
-        Attributes:
-        -----------
+
+        Attr:
+        -----
         - classes: list[str], list containing names of the classes
         - network: dnn module that provides yolo API with OpenCV backend
         - output_layers: list[str], list containing the names of the 3 output
           layers
+        - x, y, h, w = coordinates of the predicted boxes
         """
         self.classes = self.class_names(path_classes)
         self.network = cv2.dnn.readNetFromDarknet(path_config, path_weigths)
         self.output_layers = self.get_output_layers_names()
+        self.x_coord = None
+        self.y_coord = None
+        self.h_coord = None
+        self.w_coord = None
 
     def class_names(self, path):
         """
         Method defined to generate a list of class names' strings
-        Parameters:
-        -----------
+
+        Args:
+        -----
         - path: str, path to the obj.names file
+
         Return:
         -------
         - None
@@ -44,9 +52,11 @@ class YoloPredictionModel:
         In our case we limit the backend choice to OpenCV and the
         device choices to the use of CPU or CUDA. We leverage the
         dnn module from the cv2 library for that.
-        Parameters:
-        -----------
+
+        Args:
+        -----
         - device: str, choose between CPU or GPU. CPU by default
+
         Return:
         -------
         - self
@@ -63,9 +73,11 @@ class YoloPredictionModel:
     def ingest_input(self, blob):
         """
         Setter method defined to send input to our yolo model.
-        Parameters:
-        -----------
+
+        Args:
+        -----
         - blob: 4D numpy array object (images, channels, width, height)
+
         Return:
         -------
         - None
@@ -76,6 +88,7 @@ class YoloPredictionModel:
         """
         Getter method to that return as a list the name of all layers
         present in our yolo neural network.
+
         Return:
         -------
         - list: list of string of the layers' names
@@ -86,6 +99,7 @@ class YoloPredictionModel:
         """
         Getter method to get output layers position number. The yolo model has
         three output layers.
+
         Return:
         -------
         - list[list[int]]: Layer position. Be careful the fisrt layer is at
@@ -97,6 +111,7 @@ class YoloPredictionModel:
         """
         Getter method to extract the output layers based on their position
         inside the neural network architecture
+
         Return:
         -------
         - list: return the names of the three output layers of yolo
@@ -115,9 +130,11 @@ class YoloPredictionModel:
         - The fifth column of each array correspond the box confidence
         - The rest of the columns of each array correspond to each class with
           associated probability
+
         Return:
         -------
         - list[floats]
+
         Examples:
         ---------
         In our model we are suppose to get the following:
@@ -139,8 +156,9 @@ class YoloPredictionModel:
         is superior to the threshold we save the index.
         A second loop iterate through an enumerate iterable and get the
         corresponding class in order to output it in the video frame.
-        Parameters:
-        -----------
+
+        Args:
+        -----
         - image: numpy array representation of the image
         - yolo_output_objects: output object of the output layers. See
         _forward() method for a more detailed description
@@ -163,7 +181,6 @@ class YoloPredictionModel:
                     boxes.append([*point_0, int(w), int(h)])
                     class_index.append(_index)
                     class_proba.append(_proba)
-        # When all predictions are done
         indices = cv2.dnn.NMSBoxes(boxes, class_proba, threshold, threshold -
                                    0.3)
         # Use coordinates values to draw box and output message
@@ -171,29 +188,12 @@ class YoloPredictionModel:
             for i in indices.flatten():
                 (x, y) = (boxes[i][0], boxes[i][1])
                 (w, h) = (boxes[i][2], boxes[i][3])
-                cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 255), 2)
-                message = "{}: {:.4f}".format(self.classes[class_index[i]],
-                                              class_proba[i])
+                # save the coordinates for cropping as object attributes
+                self.x_coord = x
+                self.y_coord = y
+                self.h_coord = h
+                self.w_coord = w
+                cv2.rectangle(image, (x, y), (x + w, y + h), (255, 0, 255), 3)
+                message = "edp-armario: {:.4f}".format(class_proba[i])
                 cv2.putText(image, message, (x, y - 5),
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 1)
-        return(self.classes, class_index, class_proba)
-
-
-def generate_blob(image, scale=1/255, size=(416, 416), mean=0, crop=False):
-    return cv2.dnn.blobFromImage(image, scale, size, mean, crop)
-
-
-config = "data/metrics/yolov4-custom.cfg"
-weigth = "data/metrics/yolov4-custom_2000.weights"
-classe = "data/metrics/obj.names"
-predictor = YoloPredictionModel(config,
-                                weigth,
-                                classe).set_backend_and_device()
-for image in os.listdir("data/raw_images"):
-    frame = cv2.imread("data/raw_images/{}".format(image))
-    blob_input = generate_blob(frame)
-    predictor.ingest_input(blob_input)
-    layers = predictor.get_output_layers_names()
-    output = predictor._forward()
-    predictor.predict_and_identify(frame, output)
-    cv2.imwrite("data/results/{}".format(image), frame)
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 255), 2)

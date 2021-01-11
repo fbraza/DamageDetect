@@ -1,17 +1,18 @@
 import os
 import shutil
+from tqdm import tqdm
 from random import shuffle
 
 
 class DataSplitor:
-    def __init__(self, source_data, train_dest, test_dest):
+    def __init__(self, source_data: str, train_dest: str, test_dest: str) -> None:
         self.source_data = source_data
         self.train_dest = train_dest
         self.test_dest = test_dest
         self.train = None
         self.test = None
 
-    def set_train_test(self, split_factor=0.8):
+    def set_train_test(self, split_factor: float = 0.75) -> None:
         """
         Setter method defined to split the unique file names into two lists:
         one that will be used for training set and the other for test set.
@@ -52,7 +53,7 @@ class DataSplitor:
         return list(unique_root)
 
 
-def generate_yolo_inputs(source_data, split_factor=0.75):
+def generate_yolo_inputs(source_data: str, split_factor: float = 0.75) -> None:
     """
     This function automatizes the creation of the yolo files train.txt and
     test.txt that contain the names of the image files that will be process
@@ -75,11 +76,11 @@ def generate_yolo_inputs(source_data, split_factor=0.75):
     train = open("data/yol_images/train.txt", "w+")
     test = open("data/yol_images/test.txt", "w+")
     # Iterate through the file names for train
-    for idx, name in enumerate(spliter.train):
+    for idx, name in enumerate(tqdm(spliter.train)):
         write_train_txt(train, name, len(spliter.train), idx)
         copy_data(name, source_data, spliter.train_dest)
     # Iterate through the file names for test
-    for idx, name in enumerate(spliter.test):
+    for idx, name in enumerate(tqdm(spliter.test)):
         write_test_txt(test, name, len(spliter.test), idx)
         copy_data(name, source_data, spliter.test_dest)
     # Close the files
@@ -94,7 +95,7 @@ def write_train_txt(file_to_write, file_name, size_file_list, index):
     file name on the train list encapsulated as an attribute of an DataSplitor
     Args:
     -------
-    - file_to_rite: File, file to write the name of the images to be processed
+    - file_to_write: File, file to write the name of the images to be processed
     by the model
     - file_name: str, file name that will be written
     - size_file_list: int, size of the file list
