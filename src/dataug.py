@@ -21,7 +21,7 @@ def get_images_and_box_files_names(path):
     files_names = os.listdir(path)
     images = sorted([names for names in files_names if names.endswith(".jpeg")])
     bboxes = sorted([names for names in files_names if names.endswith(".txt")])
-    return (images, bboxes)
+    return images, bboxes
 
 
 def get_labels_and_coordinates(path):
@@ -125,7 +125,7 @@ def augment_and_save(path_to_get_data, path_to_save_data,
     -----
     - path_to_get_data: str, the folder path where untouched data is
     - path_to_save_data: str, the folder path where to save augmented data
-    - number_of_tranformation: int, number of transformation to perform
+    - number_of_transformation: int, number of transformation to perform
     Returns:
     --------
     -  None
