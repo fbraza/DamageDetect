@@ -85,3 +85,10 @@ For predictions we built a python class that encapsulate the `openCV` backend fo
 
 ## Summary and perspective
 
+In the case the project is accepted here a unsorted list of ideas and todos:
+
+- Discussion with Sam about the architecture of the classification model. Is the multi-step classification needed here? Can we isolate concerns and first classify the state and then classify the type of alterations. It is not clear at this stage - by reading the code - whether the last branch takes also into account the one that are classified as `good state`. Separating concerns might help. We could think of saving the path of theimages with their respective labels in a dataframe of SQL database.
+- Test YOLO classification with more classes (cabinet, support, lock, fusible, door)
+- With more classes, alter the code to save prediction into an `__iterable__` data structure
+- Explore the instance segmentation approach: (i) How to label? (ii) How to extract labeling data (iii) use native algorithm or port (matterport for keras, deceptron2 for pytorch).
+- For the architecture: databricks jupyter notebook for the data processing part? same for prediction? think about containerization for YOLO or Mask-RCNN. Use Azure functions as triggers (should we trigger a container or K8s cluster? init container for data processing and last container for training / validation? - TO DISCUSSED)
