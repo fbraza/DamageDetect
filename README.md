@@ -6,7 +6,7 @@ Repository containing the full workflow to:
 - Harness the training weights for prediction and cropping of the desired object (`src/predict.py`)
 - Classify the state of EDP electronic cabinets based on cropped images
 
-## Installation
+## Installation & Setup
 
 - **Requirements**
   - Ensure that you have `git` & `dvc` installed in your machine ([git installation](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git), [dvc installation](https://dvc.org/doc/install)).
@@ -74,11 +74,11 @@ The structure of the `data/yol_images` should look like this:
 
 - **Images labeling**
 
+In this project we used CVAT to
+
 - **YOLO training**
 
-For object detection training we used the version 4 of [YOLO](https://github.com/AlexeyAB/darknet). Don't be tricked by the naming `Darknet` which is actually the name of the neural network architecture.
-If you want to re-run the training from scratch with YOLO, please first check if you have the `C` environment installed. Also if you want to have the possibility to use the
-GPU check that `cuda` and `nvidia` drivers are installed and up-to-date. Then to use YOLO on your computer, you need to clone the repository:
+For object detection training we used the version 4 of [YOLO](https://github.com/AlexeyAB/darknet). Don't be tricked by the naming `Darknet` which is actually the name of the neural network architecture. If you want to re-run the training from scratch with YOLO, please first check if you have the `C` environment installed. Also if you want to have the possibility to use the GPU check that `cuda` and `nvidia` drivers are installed and up-to-date. Then to use YOLO on your computer, you need to clone the repository:
 
 ```bash
 git clone https://github.com/AlexeyAB/darknet
@@ -108,8 +108,7 @@ Once done you can compile the code using:
 make
 ```
 
-Before running the training you need to configure some parameters. In `darknet/cfg/` you have a list of configuration file with the extension `.cfg`. These files defines the way the
-architecture will be used depending on whether you use full or lite YOLO models. In our case we used the `yolov4.cfg` and edit it as followed:
+Before running the training you need to configure some parameters. In `darknet/cfg/` you have a list of configuration file with the extension `.cfg`. These files defines the way the architecture will be used depending on whether you use full or lite YOLO models. In our case we used the `yolov4.cfg` and edit it as followed:
 
 - `batch = 64` and `subdivisions = 16` for ultimate results. If you run into memory issues then up `subdivisions` to `32`.
 - `width = 416`, `height = 416` (these should be multiple of 32, 416 is standard)
@@ -119,15 +118,13 @@ architecture will be used depending on whether you use full or lite YOLO models.
 
 ## Usage
 
-The interface of the repository has been encapsulated into a CLI application.  Running the following command:
+- **Overview of the CLI app**
+
+The interface of the repository has been encapsulated into a CLI application.  Running the following command will output the helper documentation.:
 
 ```bash
 python app.py --help
-```
 
-will output the helper documentation.
-
-```bash
 Usage: app.py [OPTIONS] COMMAND [ARGS]...
 
 Options:
@@ -139,7 +136,7 @@ Commands:
   transform           Transform and augment a set of raw images
 ```
 
-To get help on any commands and read the required arguments run
+To get help on any commands run
 
 ```bash
 python app.py [COMMAND] --help
@@ -159,7 +156,13 @@ Options:
   --help                Show this message and exit.
 ```
 
-To launch a new training with yolov4, prepare your data accoridngly (cloning the repository, getting the data with dvc and run the transform and prepare commands from our CLI app). Then move the content of the `data/yol_images` to `darknet\data` and run:
+- **Preparing data for YOLO**
+
+To get the data ready for YOLO run the `app.py transform & prepare` command subsequently. One thing to be careful with is that each time you launch this command you actually modify the augmented dataset & the shuffling of the training and testing sets. Keep your gitflow & dvcflow practices sharp to track any changes of the data and relate them to the ongoing experiment.
+
+- **Training with YOLO**
+
+To launch a new training with YOLOv4, prepare your data accordingly (cloning the repository, getting the data with `dvc` and run the `transform` and `prepare` commands from our CLI app). Then move the content of the `data/yol_images` to `darknet\data` and run:
 
 ```bash
 ./darknet detector train data/obj.data cfg/yolo4-custom.cfg yolov4.conv.137 -map
@@ -167,17 +170,27 @@ To launch a new training with yolov4, prepare your data accoridngly (cloning the
 
 The training should take from several hours to days depending on the computer power you have access to and the number of classes you train your model with. Once finished run the following command to get the metrics on a validation set.
 
+```bash
+# ./darknet detector map data/obj.data [config-file] [weights saved in the darknet/backup folder]
+./darknet detector map data/obj.data cfg/yolov4-custom.cfg backup/yolov4-custom_5000.weights
+```
+
+If you want you can directly output the metrics into a text file. We recommend saving it into the `data/metrics` folder of this repository
+
+```bash
+./darknet detector map data/obj.data cfg/yolov4-custom.cfg backup/yolov4-custom_5000.weights > [your_repo]/data/metrics.txt
+```
+
+- **Classify photos of electric cabinets**
 
 ## ToDo
 
 - [ ] Add the classification `src/classify.py` to the CLI app
-- [ ] Do the labeling part
-- [ ] Encapsulate the full process into a pipeline
+- [ ] Make the documentation for Samuel part once code is on repository
+- [ ] Encapsulate the full process into a pipeline and document its use
 
 # Author
 
-Expertise Center of AI & Analytics, Altran (Portugal)
-
-[Contact email](joao.neves@altran.com)
+Expertise Center of AI & Analytics, Altran (Portugal, mail: joao.neves@altran.com)
 
 [Repository link](https://gitlab.com/fbraza/edp-altran)
