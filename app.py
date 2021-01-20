@@ -34,9 +34,15 @@ def transform(path_in, path_out, nbr_trans):
               default=0.75,
               type=click.FLOAT,
               help="Factor to split into training and validation sets")
-def prepare(path_in, split_factor):
-    """load img, split into train-val and prepare for yolo"""
-    datsplit.generate_yolo_inputs(path_in, split_factor)
+@click.option("--source_folder",
+              required=True,
+              help="yol_images path")
+@click.option("--dest_folder",
+              required=True,
+              help="darknet/data path")
+def prepare(path_in, source_folder, dest_folder, split_factor):
+    """load img & split into train-val & prepare for yolo"""
+    datsplit.generate_yolo_inputs(path_in, source_folder, dest_folder, split_factor)
 
 
 @cli.command()
