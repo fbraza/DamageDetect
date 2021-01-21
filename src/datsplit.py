@@ -53,10 +53,14 @@ class DataSplitor:
         return list(unique_root)
 
 
-def generate_yolo_inputs(source_data: str, split_factor: float = 0.75) -> None:
+def generate_yolo_inputs(source_data: str,
+                         folder_source: str,
+                         folder_dest: str,
+                         split_factor: float = 0.75,
+                         ) -> None:
     """
     This function automatizes the creation of the yolo files train.txt and
-    test.txt that contain the names of the image files that will be process
+    test.txt that contain the names of the image files that will be processed
     by the model. This function leverages the DataSplitor API to write files
     and copy images and yolo coordinates into new folders ready to be used by
     the Yolo model.
@@ -86,6 +90,8 @@ def generate_yolo_inputs(source_data: str, split_factor: float = 0.75) -> None:
     # Close the files
     train.close()
     test.close()
+    # move the content of the yol_images inside the data folder of darknet repo
+    move_to_darknet_repo(folder_source, folder_dest)
 
 
 def write_train_txt(file_to_write, file_name, size_file_list, index):
@@ -136,7 +142,7 @@ def write_test_txt(file_to_write, file_name, size_file_list, index):
 
 def copy_data(file_name, source, destination):
     """
-    This helper function defined to instruct the I/O process necessary to copy
+    This helper function instructs the I/O process necessary to copy
     the yolo files and copy images in the right folder. It will process each
     file name on the test list encapsulated as an attribute of an DataSplitor
     Args:
@@ -152,3 +158,12 @@ def copy_data(file_name, source, destination):
     txt_to_move = "{}.txt".format(file_name)
     shutil.copy("{}/{}".format(source, img_to_move), destination)
     shutil.copy("{}/{}".format(source, txt_to_move), destination)
+
+
+def move_to_darknet_repo(source: str, target: str) -> None:
+    """
+    text
+    """
+    for element in os.listdir(source):
+        path = "{}{}".format(source, element)
+        shutil.move(path, target)
