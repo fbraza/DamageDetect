@@ -12,6 +12,7 @@ Repository containing the full workflow to:
 
 - Ensure that you have `git` & `dvc` installed in your machine ([git installation](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git), [dvc installation](https://dvc.org/doc/install)).
 - Ensure that python >= 3.6 is installed
+- Ensure that `conda` is installed in your environment (prefer `miniconda` that is more lightweight, [here](https://docs.conda.io/projects/conda/en/latest/user-guide/install/))
 
 ### **Repository**
 
@@ -24,7 +25,7 @@ git clone https://gitlab.com/fbraza/edp-altran.git
 You should be prompted to enter your `gitlab` login and password. Next to install dependencies run:
 
 ```bash
-pip install -r requirements.txt
+conda env create --name [name_of_your_env] -f environment.yaml
 ```
 
 Finally once you have set up everything, go to the root folder of the repository, open a terminal and run:
@@ -35,17 +36,19 @@ dvc pull
 
 This will get the last version of the data for this project. The project structure should look like the following:
 
-```
+```bash
 .
 ├── app.py
 ├── assets
 ├── data
 ├── data.dvc
+├── environment.yml
 ├── __init__.py
+├── notebooks
 ├── README.md
 ├── REPORT.md
-├── requirements.txt
-└── src
+├── src
+└── test
 ```
 
 Try to sick to the structure of the data folder. It should look like this:
@@ -195,10 +198,6 @@ If you want you can directly output the metrics into a text file. We recommend s
 ```bash
 ./darknet detector map data/obj.data cfg/yolov4-custom.cfg backup/yolov4-custom_5000.weights > [your_repo]/data/metrics.txt
 ```
-
-### **Classify photos of electric cabinets**
-
-> to be finished
 
 # Author
 
