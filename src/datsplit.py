@@ -12,7 +12,7 @@ class DataSplitor:
         self.train = None
         self.test = None
 
-    def set_train_test(self, split_factor: float = 0.75) -> None:
+    def set_train_test(self, split_factor: float = 0.70) -> None:
         """
         Setter method defined to split the unique file names into two lists:
         one that will be used for training set and the other for test set.

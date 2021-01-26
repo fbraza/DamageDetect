@@ -117,7 +117,7 @@ def save_image_bbox_data(path_to_save_data, image, image_name, coordinates,
 
 
 def augment_and_save(path_to_get_data, path_to_save_data,
-                     number_of_tranformation=10):
+                     number_of_tranformation=3):
     """
     Function defined to apply an image / rounding boxes transformation pipeline
     and save the corresponding files.
@@ -134,14 +134,7 @@ def augment_and_save(path_to_get_data, path_to_save_data,
     augmentation_pipeline = A.Compose(
             [A.Resize(416, 416),
              A.Equalize(by_channels=True),
-             A.RGBShift(r_shift_limit=(-30, 30),
-                        g_shift_limit=(-30, 30),
-                        b_shift_limit=(-30, 30),
-                        p=0.25),
-             A.HorizontalFlip(p=0.35),
-             A.VerticalFlip(p=0.35),
-             A.ShiftScaleRotate(border_mode=cv2.BORDER_REPLICATE, p=0.35),
-             A.RandomSnow(brightness_coeff=2.0, p=0.2)],
+             A.HorizontalFlip(p=0.5)],
             A.BboxParams('yolo', ['class_labels'])
             )
     # Iterate through each image
