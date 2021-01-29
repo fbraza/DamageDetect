@@ -2,10 +2,14 @@ import os
 import shutil
 from tqdm import tqdm
 from random import shuffle
+from typing import List, TextIO
 
 
 class DataSplitor:
-    def __init__(self, source_data: str, train_dest: str, test_dest: str) -> None:
+    def __init__(self,
+                 source_data: str,
+                 train_dest: str,
+                 test_dest: str) -> None:
         self.source_data = source_data
         self.train_dest = train_dest
         self.test_dest = test_dest
@@ -17,34 +21,19 @@ class DataSplitor:
         Setter method defined to split the unique file names into two lists:
         one that will be used for training set and the other for test set.
         The list is shuffled and splitted using the split factor.
-        Target:
-        -------
-        - Instance of DataSplitor
-        Args:
-        -----
-        - split_factor: float, between 0 and 1, by default 0.8
-        Returns:
-        --------
-        - tuple[list[string]]
         """
         names = self.__unique_file_names()
         shuffle(names)
         self.train = names[:int(len(names) * split_factor)]
         self.test = names[int(len(names) * split_factor):]
 
-    def __unique_file_names(self):
+    def __unique_file_names(self) -> List[str]:
         """
         'Private' method defined to select unique names from our transformed
         images. After data augmentation two types of files are generated: jpg
         and txt with the same name but respective extension. Here the idea is
         to extract the common root. We use a set data structure to have the
         unique names.
-        Target:
-        -------
-        - Instance of DataSplitor
-        Returns:
-        --------
-        - list[str]
         """
         files_names = sorted(os.listdir(self.source_data))
         unique_root = set()
@@ -64,18 +53,8 @@ def generate_yolo_inputs(source_data: str,
     by the model. This function leverages the DataSplitor API to write files
     and copy images and yolo coordinates into new folders ready to be used by
     the Yolo model.
-    Args:
-    -------
-    - source_data: str, path where the augmented img and yolo coordinates files
-    are located
-    - split_factor: float, between 0 and 1, by default 0.8
-    Returns:
-    --------
-    - None
     """
-    spliter = DataSplitor(source_data,
-                          "data/yol_images/obj",
-                          "data/yol_images/test")
+    spliter = DataSplitor(source_data, "data/yol_images/obj", "data/yol_images/test")
     spliter.set_train_test(split_factor)
     train = open("data/yol_images/train.txt", "w+")
     test = open("data/yol_images/test.txt", "w+")
@@ -94,21 +73,14 @@ def generate_yolo_inputs(source_data: str,
     move_to_darknet_repo(folder_source, folder_dest)
 
 
-def write_train_txt(file_to_write, file_name, size_file_list, index):
+def write_train_txt(file_to_write: TextIO,
+                    file_name: str,
+                    size_file_list: int,
+                    index: int) -> None:
     """
     This helper function defined to instruct the I/O process necessary to write
     the yolo files and copy images in the right folder. It will process each
     file name on the train list encapsulated as an attribute of an DataSplitor
-    Args:
-    -------
-    - file_to_write: File, file to write the name of the images to be processed
-    by the model
-    - file_name: str, file name that will be written
-    - size_file_list: int, size of the file list
-    - index: index of the file in the list
-    Returns:
-    --------
-    - None
     """
     img_name = "{}.jpg".format(file_name)
     if index == size_file_list - 1:
@@ -117,21 +89,14 @@ def write_train_txt(file_to_write, file_name, size_file_list, index):
         file_to_write.write("data/obj/{}\n".format(img_name))
 
 
-def write_test_txt(file_to_write, file_name, size_file_list, index):
+def write_test_txt(file_to_write: TextIO,
+                   file_name: str,
+                   size_file_list: int,
+                   index: int) -> None:
     """
+    This helper function defined to instruct the I/O process necessary to write
     the yolo files and copy images in the right folder. It will process each
     file name on the test list encapsulated as an attribute of an DataSplitor
-    Args:
-    -------
-    This helper function defined to instruct the I/O process necessary to write
-    - file_to_rite: File, file to write the name of the iamges to be processed
-    by the model
-    - file_name: str, file name that will be written
-    - size_file_list: int, size of the file list
-    - index: index of the file in the list
-    Returns:
-    --------
-    - None
     """
     img_name = "{}.jpg".format(file_name)
     if index == size_file_list - 1:
@@ -140,19 +105,13 @@ def write_test_txt(file_to_write, file_name, size_file_list, index):
         file_to_write.write("data/test/{}\n".format(img_name))
 
 
-def copy_data(file_name, source, destination):
+def copy_data(file_name: str,
+              source: str,
+              destination: str):
     """
     This helper function instructs the I/O process necessary to copy
     the yolo files and copy images in the right folder. It will process each
     file name on the test list encapsulated as an attribute of an DataSplitor
-    Args:
-    -------
-    - file_name: str, file name that will be written
-    - source: str, path pointing to the source folder
-    - destination: str, path pointing to the destination foler
-    Returns:
-    --------
-    - None
     """
     img_to_move = "{}.jpg".format(file_name)
     txt_to_move = "{}.txt".format(file_name)
