@@ -25,10 +25,10 @@ class YoloPredictionModel:
         self.classes = self.class_names(path_classes)
         self.network = cv2.dnn.readNetFromDarknet(path_config, path_weigths)
         self.output_layers = self.get_output_layers_names()
-        self.x_coord = None
-        self.y_coord = None
-        self.h_coord = None
-        self.w_coord = None
+#        self.x_coord = None
+#        self.y_coord = None
+#        self.h_coord = None
+#        self.w_coord = None
 
     def class_names(self, path):
         """
@@ -189,11 +189,12 @@ class YoloPredictionModel:
                 (x, y) = (boxes[i][0], boxes[i][1])
                 (w, h) = (boxes[i][2], boxes[i][3])
                 # save the coordinates for cropping as object attributes
-                self.x_coord = x
-                self.y_coord = y
-                self.h_coord = h
-                self.w_coord = w
+#                self.x_coord = x
+#                self.y_coord = y
+#                self.h_coord = h
+#                self.w_coord = w
                 cv2.rectangle(image, (x, y), (x + w, y + h), (255, 0, 255), 3)
-                message = "edp-armario: {:.4f}".format(class_proba[i])
+                message = "{}: {:.4f}".format(self.class_names[class_index[i]],
+                                              class_proba[i])
                 cv2.putText(image, message, (x, y - 5),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 255), 2)

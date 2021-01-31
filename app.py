@@ -91,17 +91,17 @@ def predict_and_output(config_path,
         output = predictor._forward()
         predictor.predict_and_identify(frame, output, threshold=pred_threshold)
         cv2.imwrite("{}{}".format(output_pred, image), frame)
-        try:
-            cropped_img = imtools.crop_predictions(
-                predictor.x_coord,
-                predictor.y_coord,
-                predictor.w_coord,
-                predictor.h_coord,
-                image=cv2.imread("{}{}".format(img_input, image))
-            )
-            cv2.imwrite("{}{}".format(output_crop, image), cropped_img)
-        except TypeError:
-            continue
+#        try:
+#            cropped_img = imtools.crop_predictions(
+#                predictor.x_coord,
+#                predictor.y_coord,
+#                predictor.w_coord,
+#                predictor.h_coord,
+#                image=cv2.imread("{}{}".format(img_input, image))
+#            )
+#            cv2.imwrite("{}{}".format(output_crop, image), cropped_img)
+#        except TypeError:
+#            continue
 
 
 if __name__ == '__main__':
