@@ -204,3 +204,17 @@ If you want you can directly output the metrics into a text file. We recommend s
 Expertise Center of AI & Analytics, Altran (Portugal, mail: joao.neves@altran.com)
 
 [Repository link](https://gitlab.com/fbraza/edp-altran)
+
+# TODO
+
+- [ ] **WRITE TESTS!!!!!**
+- [ ] Rewrite the `dataug.py` in OOP
+- [ ] Use the `Path` python library to deal with paths
+- [ ] Separate concerns with the `datsplit.py`
+- [ ] Think about automating processes
+  - [ ] creating `obj.data` and `obj.names`
+  - [ ] configuring yolo `.cfg` files
+  - [ ] create directories for training and backup weights
+  - [ ] use `os.process` python module to run `./darknet` commands
+  - [ ] automate training and validation
+- [ ] Find a way to track validation metrics with MLflow
