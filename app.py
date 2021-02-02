@@ -62,7 +62,7 @@ def prepare(path_in, source_folder, dest_folder, split_factor):
               required=True,
               help="Predictions output path")
 @click.option("--output_crop",
-              required=True,
+              required=False,
               help="Scrapped boxes output path")
 @click.option("--pred_threshold",
               default=0.5,
@@ -75,7 +75,7 @@ def predict_and_output(config_path,
                        output_pred,
                        output_crop,
                        pred_threshold):
-    """localize boxes and scrap them out"""
+    """localize boxes and scrap them out if needed"""
     # iterate through images input predict boxes and scrap them
     print("## --- Generating prediction and saving outpus --- ##")
     for image in tqdm(os.listdir(img_input)):

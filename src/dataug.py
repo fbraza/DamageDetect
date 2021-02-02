@@ -52,8 +52,8 @@ def get_labels_and_coordinates(path):
 def set_new_files_names(original_file_name, tag, *extensions):
     """
     Helper function that process an original name takes out its extension and
-    create new files with new extensions.The newly generated name can then be incorpo-
-    rate in a new path to save files.
+    create new files with new extensions.The newly generated name can then be
+    incorporated in a new path to save files.
 
     Args:
     -----

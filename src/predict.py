@@ -2,6 +2,9 @@ import cv2
 import numpy as np
 
 
+COLORS = [(255, 0, 0), (0, 255, 0), (0, 0, 255), (255, 255, 0)]
+
+
 class YoloPredictionModel:
     def __init__(self, path_config, path_weigths, path_classes):
         """
@@ -164,8 +167,14 @@ class YoloPredictionModel:
         _forward() method for a more detailed description
         - threshold: float, 0.5 by default
         """
+        # generate dictionnary to hold one color by class
+        colors = {}
+        for idx, class_name in enumerate(self.classes):
+            colors[class_name] = COLORS[idx]
+        # initialize different variables
         img_heigth, img_width = image.shape[:2]
         class_index, class_proba, boxes = [], [], []
+        # iterate through predictions and filter the best ones
         for output_object in yolo_output_objects:
             for predictions in output_object:
                 probabilities = predictions[5:]
@@ -181,8 +190,9 @@ class YoloPredictionModel:
                     boxes.append([*point_0, int(w), int(h)])
                     class_index.append(_index)
                     class_proba.append(_proba)
-        indices = cv2.dnn.NMSBoxes(boxes, class_proba, threshold, threshold -
-                                   0.3)
+        # NMS function to filter again best predictions
+        indices = cv2.dnn.NMSBoxes(boxes, class_proba,
+                                   threshold, threshold - 0.3)
         # Use coordinates values to draw box and output message
         if len(indices) > 0:
             for i in indices.flatten():
@@ -193,8 +203,8 @@ class YoloPredictionModel:
 #                self.y_coord = y
 #                self.h_coord = h
 #                self.w_coord = w
-                cv2.rectangle(image, (x, y), (x + w, y + h), (255, 0, 255), 3)
-                message = "{}: {:.4f}".format(self.class_names[class_index[i]],
-                                              class_proba[i])
+                _class = self.classes[class_index[i]]
+                cv2.rectangle(image, (x, y), (x + w, y + h), colors[_class], 2)
+                message = "{}: {:.4f}".format(_class, class_proba[i])
                 cv2.putText(image, message, (x, y - 5),
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 255), 2)
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, colors[_class], 1)
