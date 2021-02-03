@@ -1,72 +1,68 @@
 import os
+import re
 import cv2
 import numpy as np
 import albumentations as A
 from tqdm import tqdm
+from pathlib import Path
+from typing import List, TextIO, Tuple, Pattern
 
 
-def get_images_and_box_files_names(path):
-    """
-    Function defined to load the names of the image and yolo bounding
-    boxes files. It loads the images and yolo names separately.
-
-    Args:
-    -----
-    - path: string of the folder's path
-
-    Returns:
-    --------
-    - Tuple[List[str], List[str]]
-    """
-    files_names = os.listdir(path)
-    images = sorted([names for names in files_names if names.endswith(".jpeg")])
-    bboxes = sorted([names for names in files_names if names.endswith(".txt")])
-    return images, bboxes
+class Augmentor:
+    def __init__(self, source: Path, destin: Path):
+        self.source = source
+        self.destin = destin
+        self.labels = None
+        self.bboxes = None
 
 
-def get_labels_and_coordinates(path):
-    """
-    Function defined to load yolo bounding boxes txt files
-    as a numpy ndarray from which we extract the class label
-    and the coordinates. These are stored in disinct lists and
-    both returned in a tuples.
-
-    Args:
-    -----
-    - path: str, file name
-
-    Returns:
-    --------
-    - Tuple[List[int], List['ndarray']
-    """
-    data, labels, coordinates = np.loadtxt(path), [], []
-    if len(data.shape) == 1:
-        data = data.reshape(1, -1)
-
-    for row in data:
-        labels.append(row[0])
-        coordinates.append(row[1:])
-    return (labels, coordinates)
+    def get_images_and_box_files_names(self) -> List[str]:
+        """
+        Returns root names of the img and bboxes files.
+        """
+        pattern: Pattern[str] = r"[^\\.txt|^\\.jpeg]+"
+        files: List(str) = os.listdir(self.source)
+        names = sorted([re.match(pattern, name) for name in files])
+        return names
 
 
-def set_new_files_names(original_file_name, tag, *extensions):
-    """
-    Helper function that process an original name takes out its extension and
-    create new files with new extensions.The newly generated name can then be incorpo-
-    rate in a new path to save files.
+    def get_labels_and_coordinates(self, bbox_file: Path) -> Tuple:
+        """
+        Function defined to load yolo bounding boxes txt files
+        as a numpy ndarray from which we extract the class label
+        and the coordinates. These are stored in disinct lists and
+        both returned in a tuples.
+        """
+        file: TextIO = open(bbox_file, "r")
+        labels: List[int] = []
+        points: List = []
+        for line in file.readlines():
+            split_line: List[str] = line.split()
+            label: int = int(split_line[0])
+            coord: List[float] = list(map(float, split_line[1:]))
+            labels.append(label)
+            points.append(coord)
+        return (labels, points)
 
-    Args:
-    -----
-    - original_file_name: str, file name
-    - tag: int, a number to tag the file name
-    - extensions: *args, strings for extension files
 
-    Returns:
-    --------
-    - List[str]
-    """
-    temp = original_file_name.replace(f".{extensions[0]}", "")
-    return [f"{temp}_{tag:02}.{extension}" for extension in extensions]
+    def set_new_files_names(self, original_file_name, tag, *extensions):
+        """
+        Helper function that process an original name takes out its extension and
+        create new files with new extensions.The newly generated name can then be incorpo-
+        rate in a new path to save files.
+
+        Args:
+        -----
+        - original_file_name: str, file name
+        - tag: int, a number to tag the file name
+        - extensions: *args, strings for extension files
+
+        Returns:
+        --------
+        - List[str]
+        """
+        temp = original_file_name.replace(f".{extensions[0]}", "")
+        return [f"{temp}_{tag:02}.{extension}" for extension in extensions]
 
 
 def get_data_from_pipeline(pipeline, image, coordinates, labels):
