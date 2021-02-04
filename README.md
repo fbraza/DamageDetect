@@ -200,8 +200,8 @@ If you want you can directly output the metrics into a text file. We recommend s
 ```
 
 # Author
-
-Expertise Center of AI & Analytics, Altran (Portugal, mail: joao.neves@altran.com)
+Faouzi Braza
+For Expertise Center of AI & Analytics, Altran (Portugal, mail: joao.neves@altran.com)
 
 [Repository link](https://gitlab.com/fbraza/edp-altran)
 
