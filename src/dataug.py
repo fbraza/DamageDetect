@@ -64,7 +64,11 @@ class Augmentor:
         bounding boxes coordinates and corresponding class labels.
         Returns a Tuple['ndarray', List['ndarray'], List[float]]
         """
-        aug_data: A.Compose = pipeline(image=image, bboxes=points, class_labels=labels)
+        aug_data: A.Compose = pipeline(
+            image=image,
+            bboxes=points,
+            class_labels=labels
+        )
         return aug_data['image'], aug_data['bboxes'], aug_data['class_labels']
 
     def save_image_bbox_data(
@@ -76,68 +80,65 @@ class Augmentor:
         point_name: str
     ) -> None:
         """
-        Function defined
-            - to save the augmented / tranformed image on the disk in a directory
-            - Process the labels and transformed coordinates into an numpy array
-            - Save the data encapsulated in the array in a txt file respecting the
-            yolo format
+        Save the image and its corresponding bboxes data
         """
         # save images
-        image_path = self.destin / image_name
+        image_path: Path = self.destin / image_name
+        bboxe_path: Path = self.destin / point_name
         cv2.imwrite("{}".format(image_path), image)
-        #
-        points = np.array(points)
-        new_yolo_bbox = np.insert(new_coordinates, 0, labels, 1)
-        np.savetxt(f"{path_to_save_data}/{yolo_name}",
-                new_yolo_bbox, ["%i", "%f", "%f", "%f", "%f"])
+        # recreate bounding boxes and save in text file the data
+        points: np.ndarray = np.array(points)
+        bboxes: np.ndarray = np.insert(points, 0, labels, 1)
+        np.savetxt(
+            {}.format(bboxe_path),
+            bboxes,
+            ["%i", "%f", "%f", "%f", "%f"]
+        )
 
-
-def augment_and_save(path_to_get_data, path_to_save_data,
-                     number_of_tranformation=3):
-    """
-    Function defined to apply an image / rounding boxes transformation pipeline
-    and save the corresponding files.
-    Args:
-    -----
-    - path_to_get_data: str, the folder path where untouched data is
-    - path_to_save_data: str, the folder path where to save augmented data
-    - number_of_transformation: int, number of transformation to perform
-    Returns:
-    --------
-    -  None
-    """
-    images_names, yolo_names = get_images_and_box_files_names(path_to_get_data)
-    augmentation_pipeline = A.Compose(
-            [A.Resize(416, 416),
-             A.Equalize(by_channels=True),
-             A.HorizontalFlip(p=0.5)],
+    def augment_and_save(
+        self,
+        source: Path,
+        destin: Path,
+        number_of_tranformation: int = 10
+    ) -> None:
+        """
+        Apply predifined data augmentation pipeline to images
+        and bounding boxes. Write and save the new files.
+        """
+        names = self.get_images_and_box_files_names()
+        dag: A.Compose = A.Compose(
+            [
+                A.Resize(416, 416),
+                A.Equalize(by_channels=True),
+                A.HorizontalFlip(p=0.5)
+            ],
             A.BboxParams('yolo', ['class_labels'])
-            )
-    # Iterate through each image
-    for idx, name in enumerate(images_names):
-        image_path = path_to_get_data + '/' + name
-        image = cv2.imread(image_path)
-        yolo_file_path = path_to_get_data + '/' + yolo_names[idx]
-        labels, coordinates = get_labels_and_coordinates(yolo_file_path)
-        # Generate x tranformation of the images
-        for i in tqdm(range(number_of_tranformation)):
-            new_image_name, new_yolos_name = set_new_files_names(
-                                                name, i, "jpg", "txt"
-                                                )
-            # Catch error due to unproper labelling
-            try:
-                new_image, new_coordinates, labels = get_data_from_pipeline(
-                                                        augmentation_pipeline,
-                                                        image, coordinates,
-                                                        labels
-                                                        )
-            except ValueError as e:
-                print("**** Error Message ****\n")
-                print(f"{e}\n")
-                print(f"""Invalid transformation of box:
-                          {str(new_coordinates)}\n""")
-                print(f"Image: {new_image_name}\n")
-                continue
-            # Save each image to jpg with its corresponding coordinates
-            save_image_bbox_data(path_to_save_data, new_image, new_image_name,
-                                 new_coordinates, labels, new_yolos_name)
+        )
+        for idx, name in enumerate(names):
+            img_path: Path = source / name / ".jpg"
+            txt_path: Path = source / name / ".txt"
+            img: np.ndarray = cv2.imread(img_path)
+            self.get_labels_and_coordinates(txt_path)
+            for i in tqdm(range(number_of_tranformation)):
+                new_img_name: Path = source / name / i / ".jpg"
+                new_txt_name: Path = source / name / i / ".txt"
+                try:
+                    timg, pts, lab = self.get_data_from_pipeline(
+                        dag,
+                        img,
+                        self.bboxes,
+                        self.labels
+                    )
+                except ValueError as e:
+                    print("**** Error Message ****\n")
+                    print("{}\n".format(e))
+                    print("Image: {}\n".format(new_img_name))
+                    continue
+                self.save_image_bbox_data(
+                    self.destin,
+                    timg,
+                    new_img_name,
+                    pts,
+                    lab,
+                    new_txt_name
+                )
