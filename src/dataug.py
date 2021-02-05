@@ -19,7 +19,7 @@ class Augmentor:
         self.labels = None
         self.bboxes = None
 
-    def get_images_and_box_files_names(
+    def get_file_names(
         self
     ) -> List[str]:
         """
@@ -50,7 +50,7 @@ class Augmentor:
             points.append(coord)
         file.close()
         self.labels = labels
-        self.points = points
+        self.bboxes = points
 
     def get_data_from_pipeline(
             self,
@@ -58,7 +58,7 @@ class Augmentor:
             image: np.ndarray,
             points: List[float],
             labels: List[int]
-    ) -> Tuple(np.ndarray, List[List[float]], List[int]):
+    ) -> Tuple[np.ndarray, List[List[float]], List[int]]:
         """
         Apply the data augmentation pipeline and retrieve image,
         bounding boxes coordinates and corresponding class labels.
@@ -90,7 +90,7 @@ class Augmentor:
         points: np.ndarray = np.array(points)
         bboxes: np.ndarray = np.insert(points, 0, labels, 1)
         np.savetxt(
-            {}.format(bboxe_path),
+            "{}".format(bboxe_path),
             bboxes,
             ["%i", "%f", "%f", "%f", "%f"]
         )
@@ -105,7 +105,7 @@ class Augmentor:
         Apply predifined data augmentation pipeline to images
         and bounding boxes. Write and save the new files.
         """
-        names = self.get_images_and_box_files_names()
+        names = self.get_file_names()
         dag: A.Compose = A.Compose(
             [
                 A.Resize(416, 416),
@@ -115,13 +115,13 @@ class Augmentor:
             A.BboxParams('yolo', ['class_labels'])
         )
         for idx, name in enumerate(names):
-            img_path: Path = source / name / ".jpg"
-            txt_path: Path = source / name / ".txt"
-            img: np.ndarray = cv2.imread(img_path)
+            img_path: Path = source / (name+".jpeg")
+            txt_path: Path = source / (name+".txt")
+            img: np.ndarray = cv2.imread("{}".format(img_path))
             self.get_labels_and_coordinates(txt_path)
             for i in tqdm(range(number_of_tranformation)):
-                new_img_name: Path = source / name / i / ".jpg"
-                new_txt_name: Path = source / name / i / ".txt"
+                new_img_name: Path = Path(name+"_"+str(i)+".jpg")
+                new_txt_name: Path = Path(name+"_"+str(i)+".txt")
                 try:
                     timg, pts, lab = self.get_data_from_pipeline(
                         dag,
@@ -135,10 +135,10 @@ class Augmentor:
                     print("Image: {}\n".format(new_img_name))
                     continue
                 self.save_image_bbox_data(
-                    self.destin,
                     timg,
                     new_img_name,
                     pts,
                     lab,
                     new_txt_name
                 )
+#
