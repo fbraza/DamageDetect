@@ -40,7 +40,9 @@ class TestAugmentorMethods(unittest.TestCase):
         self.assertEqual(file_count, 20)
 
     def tearDown(self) -> None:
-        return super().tearDown()
+        files = os.listdir(self.aug.destin)
+        for file in files:
+            (self.aug.destin / file).unlink()
 
 
 if __name__ == '__main__':
