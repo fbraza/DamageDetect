@@ -5,33 +5,39 @@ import numpy as np
 import albumentations as A
 from tqdm import tqdm
 from pathlib import Path
-from typing import List, TextIO, Tuple, Pattern
+from typing import Dict, List, TextIO, Tuple, Pattern
 
 
 class Augmentor:
-    def __init__(self, source: Path, destin: Path):
+    def __init__(
+        self,
+        source: Path,
+        destin: Path
+    ) -> None:
         self.source = source
         self.destin = destin
         self.labels = None
         self.bboxes = None
 
-
-    def get_images_and_box_files_names(self) -> List[str]:
+    def get_images_and_box_files_names(
+        self
+    ) -> List[str]:
         """
         Returns root names of the img and bboxes files.
         """
         pattern: Pattern[str] = r"[^\\.txt|^\\.jpeg]+"
         files: List(str) = os.listdir(self.source)
-        names = sorted([re.match(pattern, name) for name in files])
-        return names
+        names: Dict = {re.match(pattern, name)[0]: True for name in files}
+        names: List = list(names.keys())
+        return sorted(names)
 
-
-    def get_labels_and_coordinates(self, bbox_file: Path) -> Tuple:
+    def get_labels_and_coordinates(
+        self,
+        bbox_file: Path
+    ) -> Tuple:
         """
-        Function defined to load yolo bounding boxes txt files
-        as a numpy ndarray from which we extract the class label
-        and the coordinates. These are stored in disinct lists and
-        both returned in a tuples.
+        Labels and points are processed from file, splitted
+        and returned in two lists
         """
         file: TextIO = open(bbox_file, "r")
         labels: List[int] = []
@@ -42,74 +48,48 @@ class Augmentor:
             coord: List[float] = list(map(float, split_line[1:]))
             labels.append(label)
             points.append(coord)
-        return (labels, points)
+        file.close()
+        self.labels = labels
+        self.points = points
 
-
-    def set_new_files_names(self, original_file_name, tag, *extensions):
+    def get_data_from_pipeline(
+            self,
+            pipeline: A.Compose,
+            image: np.ndarray,
+            points: List[float],
+            labels: List[int]
+    ) -> Tuple(np.ndarray, List[List[float]], List[int]):
         """
-        Helper function that process an original name takes out its extension and
-        create new files with new extensions.The newly generated name can then be incorpo-
-        rate in a new path to save files.
-
-        Args:
-        -----
-        - original_file_name: str, file name
-        - tag: int, a number to tag the file name
-        - extensions: *args, strings for extension files
-
-        Returns:
-        --------
-        - List[str]
+        Apply the data augmentation pipeline and retrieve image,
+        bounding boxes coordinates and corresponding class labels.
+        Returns a Tuple['ndarray', List['ndarray'], List[float]]
         """
-        temp = original_file_name.replace(f".{extensions[0]}", "")
-        return [f"{temp}_{tag:02}.{extension}" for extension in extensions]
+        aug_data: A.Compose = pipeline(image=image, bboxes=points, class_labels=labels)
+        return aug_data['image'], aug_data['bboxes'], aug_data['class_labels']
 
-
-def get_data_from_pipeline(pipeline, image, coordinates, labels):
-    """
-    Function defined to apply the data augmentation pipeline and retrieve image,
-    bounding boxes coordinates and corresponding class labels.
-
-    Args:
-    -----
-    - pipeline: albumentations.Compose Object
-    - image: ndarray, image to be augmented
-    - coordinates: List['ndarray[float]'], the coordinates of the bounding box
-    - labels: List[float], labels of each class
-
-    Returns:
-    --------
-    - Tuple['ndarray', List['ndarray'], List[float]]
-    """
-    aug_data = pipeline(image=image, bboxes=coordinates, class_labels=labels)
-    return aug_data['image'], aug_data['bboxes'], aug_data['class_labels']
-
-
-def save_image_bbox_data(path_to_save_data, image, image_name, coordinates,
-                         labels, yolo_name):
-    """
-    Function defined
-        - to save the augmented / tranformed image on the disk in a directory
-        - Process the labels and transformed coordinates into an numpy array
-        - Save the data encapsulated in the array in a txt file respecting the
-          yolo format
-    Args:
-    -----
-    - path_to_save_data: str, folder where to save augmented data
-    - image: ndarray, image to be saved
-    - image_name: str, image file name
-    - coordinates: List['ndarray[float]'], returned bboxes from the pipeline
-    - labels: List[float], labels of each class
-    - yolo_name: str, yolo txt file name
-    Returns:
-    --------
-    - None
-    """
-    cv2.imwrite(f"{path_to_save_data}/{image_name}", image)
-    new_coordinates = np.array(coordinates)
-    new_yolo_bbox = np.insert(new_coordinates, 0, labels, 1)
-    np.savetxt(f"{path_to_save_data}/{yolo_name}",
-               new_yolo_bbox, ["%i", "%f", "%f", "%f", "%f"])
+    def save_image_bbox_data(
+        self,
+        image: np.ndarray,
+        image_name: str,
+        points: List[float],
+        labels: List[int],
+        point_name: str
+    ) -> None:
+        """
+        Function defined
+            - to save the augmented / tranformed image on the disk in a directory
+            - Process the labels and transformed coordinates into an numpy array
+            - Save the data encapsulated in the array in a txt file respecting the
+            yolo format
+        """
+        # save images
+        image_path = self.destin / image_name
+        cv2.imwrite("{}".format(image_path), image)
+        #
+        points = np.array(points)
+        new_yolo_bbox = np.insert(new_coordinates, 0, labels, 1)
+        np.savetxt(f"{path_to_save_data}/{yolo_name}",
+                new_yolo_bbox, ["%i", "%f", "%f", "%f", "%f"])
 
 
 def augment_and_save(path_to_get_data, path_to_save_data,
